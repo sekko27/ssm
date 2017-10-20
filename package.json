@@ -1,0 +1,28 @@
+{
+  "name": "ssm",
+  "version": "0.0.1",
+  "description": "Simple state machine",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha -R spec --recursive tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sekko27/ssm.git"
+  },
+  "keywords": [
+    "State",
+    "Machine"
+  ],
+  "author": "Sekko <sekko272727@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sekko27/ssm/issues"
+  },
+  "homepage": "https://github.com/sekko27/ssm#readme"
+}
