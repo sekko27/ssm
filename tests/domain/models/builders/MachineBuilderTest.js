@@ -71,6 +71,7 @@ describe('MachineBuilder', function() {
         return Machine().state('test1', true).add().state('test2').add().machine().execute({type:'move'}).should.be.rejectedWith(TransitionNotFound);
     });
 
+    // TODO Extract
     it('should move the current pointer on execution', function() {
         const m = Machine().state('test1', true).transition('move', new FunctionalTransition(() => {
             return new TransitionResult('test2', null);
@@ -78,6 +79,7 @@ describe('MachineBuilder', function() {
         return m.execute({type: 'move'}).then(() => m.currentStateName).should.become('test2');
     });
 
+    // TODO Extract
     it('should emit event on state change', function() {
         const m = Machine().state('test1', true).transition('move', new FunctionalTransition(()=> {
             return new TransitionResult('test2', null);
@@ -90,12 +92,14 @@ describe('MachineBuilder', function() {
         }).then((r) => ({old: r.oldState.id, new: r.newState.id})).should.become({old: 'test1', new: 'test2'});
     });
 
+    // TODO Extract
     it('should be rejected on transition rejection (if no listener on error)', function() {
         return Machine().state('test1', true).transition('move', new FunctionalTransition(() => {
             return Promise.reject(new Error('abc'));
         })).add().machine().execute({type: 'move'}).should.be.rejectedWith(Error, /^abc$/);
     });
 
+    // TODO Extract
     it('should emit event on transition rejection', function() {
         const m = Machine().state('test1', true).transition('move', new FunctionalTransition(() => {
             return Promise.reject(new Error('abc'));
@@ -103,10 +107,32 @@ describe('MachineBuilder', function() {
         return Promise.fromCallback((cb) => {
             m.on(events.TRANSITION_FAILED_NAME, (e) => {
                 cb(null, e);
-            })
+            });
             m.execute({type: 'move'});
         }).then((r) => ({state: r.state.id, event: r.event.type, error: r.error.message}))
             .should.become({state: 'test1', event: 'move', error: 'abc'});
-
+    });
+    it('should return proper possible event names', function() {
+        const m = Machine()
+            .state('test1', true)
+                .transition('move1-2', new FunctionalTransition(() => new TransitionResult('test2', null)))
+                .transition('move1-3', new FunctionalTransition(() => new TransitionResult('test3', null)))
+                .add()
+            .state('test2')
+                .transition('move2-3', new FunctionalTransition(() => new TransitionResult('test3', null)))
+                .add()
+            .state('test3')
+                .transition('move3-1', new FunctionalTransition(() => new TransitionResult('test1', null)))
+                .add()
+            .machine();
+        assert.sameMembers(m.possibleEventTypes, ['move1-2', 'move1-3']);
+        return m.execute({type:'move1-2'})
+            .then(() => {
+                assert.sameMembers(m.possibleEventTypes, ['move2-3']);
+                return m.execute({type:'move2-3'});
+            })
+            .then(() => {
+                assert.sameMembers(m.possibleEventTypes, ['move3-1']);
+            });
     })
 });
