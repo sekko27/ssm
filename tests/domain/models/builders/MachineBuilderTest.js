@@ -1,6 +1,6 @@
 const {
     builders: {Machine},
-    errors: {TransitionNotFound, TransitionResultExpected},
+    errors: {TransitionNotFound, TransitionResultExpected, TransitionInProcess},
     FunctionalTransition,
     TransitionResult,
     events
@@ -223,6 +223,17 @@ describe('MachineBuilder', function() {
         return m.execute({type: 'm1-2'}).should.be.rejectedWith(TransitionResultExpected);
     });
 
-
+    it('should be rejected when executing event on in-progress state (running transition on it)', function() {
+        const m = Machine()
+            .state('s1', true)
+                .transition('m1-2', new FunctionalTransition(() => Promise.delay(500, new TransitionResult('s2'))))
+                .add
+            .state('s2')
+                .transition('m2-1', new FunctionalTransition(() => Promise.delay(500, new TransitionResult('s1'))))
+                .add
+            .build;
+        m.execute({type: 'm1-2'});
+        return Promise.delay(50).then(() => m.execute({type: 'm1-2'})).should.be.rejectedWith(TransitionInProcess);
+    });
 
 });
