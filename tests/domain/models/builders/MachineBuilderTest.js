@@ -1,6 +1,6 @@
 const {
     builders: {Machine},
-    errors: {TransitionNotFound},
+    errors: {TransitionNotFound, TransitionResultExpected},
     FunctionalTransition,
     TransitionResult,
     events
@@ -212,6 +212,17 @@ describe('MachineBuilder', function() {
                 {oldState: result.oldState.id, newState: result.newState.id},
                 {oldState: 's1', newState: 's2'}
             ));
-    })
+    });
+    it('should be rejected on non-TransitionResult transition result', function() {
+        const m = Machine()
+            .state('s1', true)
+            .transition('m1-2', new FunctionalTransition(() => 27))
+            .add
+            .state('s2', false).add
+            .build;
+        return m.execute({type: 'm1-2'}).should.be.rejectedWith(TransitionResultExpected);
+    });
+
+
 
 });
