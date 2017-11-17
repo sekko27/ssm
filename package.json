@@ -1,6 +1,6 @@
 {
   "name": "sssm",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Stupid simple state machine",
   "main": "index.js",
   "dependencies": {
