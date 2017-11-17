@@ -29,8 +29,7 @@ describe('MachineBuilder', function() {
 
     it('should expose machine builder (finalizer) method', function() {
         const builder = Machine();
-        assert.property(builder, 'build');
-        assert.isFunction(builder.build);
+        assert.isDefined(Object.getOwnPropertyDescriptor(builder, 'build'));
     });
 
     it('should expose transition builder inside state builder', function() {
@@ -41,26 +40,25 @@ describe('MachineBuilder', function() {
 
     it('should expose add (finalizer) builder inside state builder', function() {
         const stateBuilder = Machine().state('test', true);
-        assert.property(stateBuilder, 'add');
-        assert.isFunction(stateBuilder.add);
+        assert.isDefined(Object.getOwnPropertyDescriptor(stateBuilder, 'add'));
     });
 
     it('should throws AssertionError on duplicating state id', function() {
         assert.throws(function() {
-            Machine().state('test').add().state('test').add().build();
+            Machine().state('test').add.state('test').add.build;
         }, AssertionError, /Duplicated state id/);
     });
 
     it('should select the first as initial when no initial explicitly defined', function() {
-        assert.equal('test1', Machine().state('test1').add().state('test2').add().build().currentStateName);
+        assert.equal('test1', Machine().state('test1').add.state('test2').add.build.currentStateName);
     });
 
     it('should select the explicitly defined initial state as initial', function() {
-        assert.equal('test2', Machine().state('test1').add().state('test2', true).add().build().currentStateName);
+        assert.equal('test2', Machine().state('test1').add.state('test2', true).add.build.currentStateName);
     });
 
     it('should select the last explicitly defined initial state as initial', function() {
-        assert.equal('test3', Machine().state('test1', true).add().state('test2', false).add().state('test3', true).add().build().currentStateName);
+        assert.equal('test3', Machine().state('test1', true).add.state('test2', false).add.state('test3', true).add.build.currentStateName);
     });
 
     it('should throws AssertionError on duplicate transition on same state', function() {
@@ -68,19 +66,19 @@ describe('MachineBuilder', function() {
             Machine().state('test')
                 .transition('e', new FunctionalTransition(()=>{}))
                 .transition('e', new FunctionalTransition(()=>{}))
-                .add().build();
+                .add.build;
         }, AssertionError, /Duplication transition/);
     });
 
     it('should throws TransitionNotFound on non-existing transition', function() {
-        return Machine().state('test1', true).add().state('test2').add().build().execute({type:'move'}).should.be.rejectedWith(TransitionNotFound);
+        return Machine().state('test1', true).add.state('test2').add.build.execute({type:'move'}).should.be.rejectedWith(TransitionNotFound);
     });
 
     // TODO Extract
     it('should move the current pointer on execution', function() {
         const m = Machine().state('test1', true).transition('move', new FunctionalTransition(() => {
             return new TransitionResult('test2', null);
-        })).add().state('test2').add().build();
+        })).add.state('test2').add.build;
         return m.execute({type: 'move'}).then(() => m.currentStateName).should.become('test2');
     });
 
@@ -88,7 +86,7 @@ describe('MachineBuilder', function() {
     it('should emit event on state change', function() {
         const m = Machine().state('test1', true).transition('move', new FunctionalTransition(()=> {
             return new TransitionResult('test2', null);
-        })).add().state('test2').add().build();
+        })).add.state('test2').add.build;
         return Promise.fromCallback((cb) => {
             m.on(events.MACHINE_STATE_CHANGED_NAME, (e) => {
                 cb(null, e);
@@ -101,14 +99,14 @@ describe('MachineBuilder', function() {
     it('should be rejected on transition rejection (if no listener on error)', function() {
         return Machine().state('test1', true).transition('move', new FunctionalTransition(() => {
             return Promise.reject(new Error('abc'));
-        })).add().build().execute({type: 'move'}).should.be.rejectedWith(Error, /^abc$/);
+        })).add.build.execute({type: 'move'}).should.be.rejectedWith(Error, /^abc$/);
     });
 
     // TODO Extract
     it('should emit event on transition rejection', function() {
         const m = Machine().state('test1', true).transition('move', new FunctionalTransition(() => {
             return Promise.reject(new Error('abc'));
-        })).add().build();
+        })).add.build;
         return Promise.fromCallback((cb) => {
             m.on(events.TRANSITION_FAILED_NAME, (e) => {
                 cb(null, e);
@@ -122,14 +120,14 @@ describe('MachineBuilder', function() {
             .state('test1', true)
                 .transition('move1-2', new FunctionalTransition(() => new TransitionResult('test2', null)))
                 .transition('move1-3', new FunctionalTransition(() => new TransitionResult('test3', null)))
-                .add()
+                .add
             .state('test2')
                 .transition('move2-3', new FunctionalTransition(() => new TransitionResult('test3', null)))
-                .add()
+                .add
             .state('test3')
                 .transition('move3-1', new FunctionalTransition(() => new TransitionResult('test1', null)))
-                .add()
-            .build();
+                .add
+            .build;
         assert.sameMembers(m.possibleEventTypes, ['move1-2', 'move1-3']);
         return m.execute({type:'move1-2'})
             .then(() => {
@@ -147,9 +145,9 @@ describe('MachineBuilder', function() {
             .state('s1', true)
                 .transition('m1-2', new FunctionalTransition(() => new TransitionResult('s2', null)))
                 .on('before transition', onBeforeTransition)
-                .add()
-            .state('s2', false).add()
-            .build();
+                .add
+            .state('s2', false).add
+            .build;
         return m.execute({type:'m1-2'})
             .then(() => onBeforeTransition.should.have.been.called.once)
             .then(() => assert.deepEqual({state: result.state.id, event: result.event.type}, {state: 's1', event: 'm1-2'}));
@@ -161,9 +159,9 @@ describe('MachineBuilder', function() {
             .state('s1', true)
             .transition('m1-2', new FunctionalTransition(() => new TransitionResult('s2', 'result-value')))
             .on('after transition', onAfterTransition)
-            .add()
-            .state('s2', false).add()
-            .build();
+            .add
+            .state('s2', false).add
+            .build;
         return m.execute({type:'m1-2'})
             .then(() => onAfterTransition.should.have.been.called.once)
             .then(() => assert.deepEqual(
@@ -177,10 +175,10 @@ describe('MachineBuilder', function() {
         const m = Machine()
             .state('s1', true)
             .transition('m1-2', new FunctionalTransition(() => Promise.reject('test error')))
-            .add()
-            .state('s2', false).add()
+            .add
+            .state('s2', false).add
             .on('transition failed', onFailed)
-            .build();
+            .build;
         return m.execute({type: 'm1-2'}).should.be.fulfilled
             .then(() => onFailed.should.have.been.called.once)
             .then(() => assert.deepEqual(
@@ -192,9 +190,9 @@ describe('MachineBuilder', function() {
         const m = Machine()
             .state('s1', true)
             .transition('m1-2', new FunctionalTransition(() => Promise.reject('test error')))
-            .add()
-            .state('s2', false).add()
-            .build();
+            .add
+            .state('s2', false).add
+            .build;
         return m.execute({type: 'm1-2'}).should.be.rejectedWith('test error');
     });
     it('should support "machine state changed" event listening', function() {
@@ -203,10 +201,10 @@ describe('MachineBuilder', function() {
         const m = Machine()
             .state('s1', true)
             .transition('m1-2', new FunctionalTransition(() => new TransitionResult('s2', null)))
-            .add()
-            .state('s2', false).add()
+            .add
+            .state('s2', false).add
             .on('machine state changed', onChange)
-            .build();
+            .build;
         return m.execute({type: 'm1-2'})
             .should.be.fulfilled
             .then(() => onChange.should.have.been.called.once)
