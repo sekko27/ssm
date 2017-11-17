@@ -1,6 +1,6 @@
 {
-  "name": "ssm",
-  "version": "0.0.1",
+  "name": "simple-state-machine",
+  "version": "0.0.2",
   "description": "Simple state machine",
   "main": "index.js",
   "dependencies": {

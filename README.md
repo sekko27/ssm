@@ -52,7 +52,7 @@ const {
     TransitionResult,
     FunctionalTransition,
     Transition
-} = require('ssm');
+} = require('simple-state-machine');
 
 const transition1 = new FunctionalTransition(() => new TransitionResult('state-2', {/* payload */}));
 const transition2 = new FunctionalTransition(() => Promise.delay(1000).return(new TransitionResult('state-2', {/* payload */}));
@@ -66,7 +66,7 @@ The module exposes the builders.Machine interface to build State machines.
 Example:
 
 ```javascript
-const {builders:{Machine}} = require('ssm');
+const {builders:{Machine}} = require('simple-state-machine');
 
 const machine = Machine()
     .state('s1', true) // State with id 's1' and it's the initial state
